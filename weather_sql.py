@@ -14,7 +14,7 @@ LONG = 103.63
 DB_CONFIG = {
     "dbname":   os.getenv("DB_NAME", "weather_db"),
     "user":     os.getenv("DB_USER", "postgres"),
-    "password": os.getenv("DB_PASSWORD", ""),
+    "password": os.getenv("DB_PASSWORD", "0637"),
     "host":     os.getenv("DB_HOST", "localhost"),
     "port":     os.getenv("DB_PORT", 5432),
 }
