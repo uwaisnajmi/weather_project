@@ -1,0 +1,41 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: weather_db
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB:       ${DB_NAME:-weather_db}
+      POSTGRES_USER:     ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-weather_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  etl:
+    build: .
+    container_name: weather_etl
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST: db          # override so etl talks to the db container
+    depends_on:
+      db:
+        condition: service_healthy
+    # Run every 15 minutes via a simple shell loop
+    # Change 900 (seconds) to whatever interval you prefer
+    command: >
+      sh -c "while true; do
+               python weather_sql.py;
+               echo '[Scheduler] Sleeping 15 minutes...';
+               sleep 900;
+             done"
+
+volumes:
+  pgdata:
